@@ -1,0 +1,103 @@
+//this is CRT refrence     
+    
+    document.addEventListener("DOMContentLoaded", initialize);
+
+    // Don't remove anything just complete the functions
+
+    // When the page get load display all users
+    function initialize(){
+        const usersList = JSON.parse(localStorage.getItem("usersList")) || []
+        for (let i = 0; i < usersList.length; i++){
+            display(usersList[i])
+        }
+        sessionStorage.removeItem("editId")
+    }
+
+    // add new users in usersList array
+    function handleFormSubmit(event) {  
+        event.preventDefault()
+        const username = event.target.username.value
+        const email = event.target.email.value
+        const phone = event.target.phone.value
+
+        const obj = {
+            username,email,phone
+        }
+        const usersList = JSON.parse(localStorage.getItem("usersList")) || []
+
+        const editId = sessionStorage.getItem("editId")
+        if (editId) {
+            for (let i = 0; i < usersList.length; i++){
+                if (usersList[i].id == editId) {
+                    usersList[i].username = username
+                    usersList[i].email = email
+                    usersList[i].phone = phone
+                }
+            }
+            const li = document.getElementById(editId)
+            li.firstChild.textContent = obj.username+" "+obj.email+" "+obj.phone
+
+            sessionStorage.removeItem("editId")
+            const submit = document.querySelector("#submitbtn")
+            submit.textContent = "Submit"
+        } else {
+            
+             addData(usersList, obj)
+        }
+        
+
+        // event.target.reset()
+        localStorage.setItem("usersList", JSON.stringify(obj))
+    }
+
+    // use this function to display user on screen
+    function display(obj) {
+        const ul = document.querySelector("ul")
+        const li = document.createElement("li")
+        li.textContent = obj.username + " " + obj.email + " " + obj.phone
+        li.id = obj.id
+        const deletebtn = document.createElement("button")
+        deletebtn.textContent = "Delete"
+        deletebtn.addEventListener('click', () => deleteData(obj.id, li))
+        li.appendChild(deletebtn)
+        ul.appendChild(li)
+
+        const editbtn = document.createElement("button")
+        editbtn.textContent = "Edit"
+        editbtn.addEventListener('click', () => editData(obj))
+        li.appendChild(editbtn)
+    }
+
+    // use this function to add user details into local storage
+    function addData(usersList,obj) {
+        obj.id = Date.now()
+        usersList.push(obj)
+        display(obj)
+    }
+
+
+    // use this function to delete the user details from local store and DOM (screen)
+    function deleteData(id,li) {
+    
+        const usersList = JSON.parse(localStorage.getItem("usersList"))||[]
+        const updateList = usersList.filter(user => user.id !== id)
+        localStorage.setItem("usersList", JSON.stringify(updateList))
+        li.remove()
+    }
+
+    // use this function to update user details from local storage
+    function editData(data) {
+        const username = document.querySelector("#username")
+        const email = document.querySelector("#email")
+        const phone = document.querySelector("#phone")
+
+        username.value = data.username
+        email.value = data.email
+        phone.value = data.phone
+        sessionStorage.setItem("editId", data.id)
+
+        const submitbtn = document.querySelector("#submitbtn")
+        submitbtn.textContent = "Update"
+    }
+
+    module.exports = handleFormSubmit
